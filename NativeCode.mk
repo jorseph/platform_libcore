@@ -69,6 +69,10 @@ core_cflags := -fvisibility=hidden
 core_cflags += '-DGCC_HIDDEN=__attribute__((visibility("hidden")))'
 core_cppflags := -fvisibility-inlines-hidden
 
+ifeq ($(INTEL_HOUDINI), true)
+    core_cflags += -DWITH_HOUDINI
+endif
+
 
 #
 # Build for the target (device).
