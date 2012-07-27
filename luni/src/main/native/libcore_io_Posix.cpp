@@ -860,12 +860,60 @@ static void Posix_munmap(JNIEnv* env, jobject, jlong address, jlong byteCount) {
     throwIfMinusOne(env, "munmap", TEMP_FAILURE_RETRY(munmap(ptr, byteCount)));
 }
 
+#ifdef WITH_HOUDINI
+#define MAX_ABI2_NUM 1000
+#define APP_WITH_ABI2 "/data/data/.appwithABI2"
+#define CPUINFO "/proc/cpuinfo"
+#define ARM_CPUINFO "/system/lib/arm/cpuinfo"
+#endif
+
 static jobject Posix_open(JNIEnv* env, jobject, jstring javaPath, jint flags, jint mode) {
     ScopedUtfChars path(env, javaPath);
     if (path.c_str() == NULL) {
         return NULL;
     }
+#ifdef WITH_HOUDINI
+    int fd = -1;
+
+    if (strncmp(path.c_str(),CPUINFO, sizeof(CPUINFO))==0) {
+        int myuid = getuid();
+
+        jint pkg_ABI2 = TEMP_FAILURE_RETRY(open(APP_WITH_ABI2, O_RDONLY,0444));
+
+        if (pkg_ABI2 != -1 ) {
+            int pkguid = 0;
+            int i = 0;
+
+            ALOGD("Searching package installed with ABI2 with Uid: %d \n", myuid);
+            while (i < MAX_ABI2_NUM) {
+                int read_ret;
+
+                read_ret = TEMP_FAILURE_RETRY(read(pkg_ABI2, &pkguid, 4));
+                if (read_ret == -1 || read_ret == 0) {
+                    break;
+                }
+                if (myuid == pkguid) break;
+                i++;
+            }
+
+            if(myuid == pkguid) {
+                fd = throwIfMinusOne(env, "open", TEMP_FAILURE_RETRY(open(ARM_CPUINFO, flags, mode)));
+                ALOGD("Apps with ABI2 %d accessing /proc/cpuinfo \n", fd);
+            } else {
+                ALOGD("Application is pure Java or contains primary ABI library \n");
+            }
+
+            TEMP_FAILURE_RETRY(close(pkg_ABI2));
+        }
+    }
+
+    if (fd==-1)
+        fd = throwIfMinusOne(env, "open", TEMP_FAILURE_RETRY(open(path.c_str(), flags, mode)));
+
+#else
     int fd = throwIfMinusOne(env, "open", TEMP_FAILURE_RETRY(open(path.c_str(), flags, mode)));
+#endif
+
     return fd != -1 ? jniCreateFileDescriptor(env, fd) : NULL;
 }
 
