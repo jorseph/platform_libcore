@@ -67,6 +67,10 @@ core_c_includes := $(sort libcore/include $(LOCAL_C_INCLUDES) $(JNI_H_INCLUDE))
 core_shared_libraries := $(sort $(LOCAL_SHARED_LIBRARIES))
 core_static_libraries := $(sort $(LOCAL_STATIC_LIBRARIES))
 
+ifeq ($(INTEL_HOUDINI), true)
+    core_cflags += -DWITH_HOUDINI
+endif
+
 
 #
 # Build for the target (device).
