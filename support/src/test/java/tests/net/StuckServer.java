@@ -62,7 +62,7 @@ public final class StuckServer {
             // We've had trouble with 10.* in the past (because test labs running CTS often use
             // net 10!) but hopefully this network will be better.
             InetAddress testNet1 = InetAddress.getByAddress(new byte[] { (byte) 192, 0, 2, 0 });
-            this.address = new InetSocketAddress(testNet1, 80);
+            this.address = new InetSocketAddress(testNet1, 20080);
         }
     }
 
