@@ -144,8 +144,8 @@ public final class MessageDigestTest extends TestCase {
         // Regression test input for problem SHA-1 with input of
         // 256MBs.  However, its currently too slow to be practical on
         // devices, so its disabled in that case. http://b/4501620
-        boolean enabled256mb = (System.getProperty("os.arch").contains("x86") // host
-                                || System.getProperty("os.arch").contains("amd64")); // RI
+        // even on x86 PC, it is too slow to finish. Disable it.
+        boolean enabled256mb = false;
         if (enabled256mb) {
             // INPUT_256MB
             putExpectation("MD2",
