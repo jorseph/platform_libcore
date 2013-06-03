@@ -314,7 +314,14 @@ public final class System {
         p.put("user.name", getenv("USER", ""));
 
         StructUtsname info = Libcore.os.uname();
-        p.put("os.arch", info.machine);
+
+        String osarchName = getenv("OS_ARCH_OVERRIDE");
+        if (osarchName != null && osarchName.length() != 0) {
+            p.put("os.arch", osarchName);
+        } else {
+            p.put("os.arch", info.machine);
+        }
+
         p.put("os.name", info.sysname);
         p.put("os.version", info.release);
 
